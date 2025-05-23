@@ -6,7 +6,7 @@ const prisma = new PrismaClient({
 });
 
 
-prisma.$on('query', async (e: Prima.QueryEvent) => {
+prisma.$on('query', async (e: Prisma.QueryEvent) => {
     await LogsQueryModel.create({
         query: e.query,
         params: e.params,
