@@ -1,0 +1,13 @@
+type Rols {
+  cod_rol: Int!
+  name: String!
+  active: Boolean
+}
+
+type Query {
+  getAllRols: [Rols!]!
+}
+
+type Mutation {
+  createRol(name: String!): Rols!
+}

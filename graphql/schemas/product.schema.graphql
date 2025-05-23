@@ -1,0 +1,41 @@
+type ProductImage {
+  cod_product_image: Int!
+  url: String!
+  alt: String
+}
+
+type Products {
+  cod_product: Int!
+  name: String!
+  ean: String!
+  bar_code: String!
+  unit_price: Float!
+  sku: String!
+  description: String!
+  cod_category: Int!
+  active: Boolean!
+
+  category: Category!
+  images: [ProductImage!]!
+}
+
+input ProductInput {
+  name: String!
+  ean: String!
+  bar_code: String!
+  unit_price: Float!
+  sku: String!
+  description: String!
+  cod_category: Int!
+  active: Boolean = true
+}
+
+extend type Query {
+  getAllProducts: [Products!]!
+  getProduct(cod_product: Int!): Products
+}
+
+extend type Mutation {
+  createProduct(data: ProductInput!): Products!
+  deleteProduct(cod_product: Int!): Products!
+}

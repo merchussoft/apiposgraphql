@@ -1,0 +1,24 @@
+type Subcategory {
+  cod_subcategory: Int!
+  name: String!
+  description: String
+  createdAt: String!
+  updatedAt: String!
+
+  category: Category!
+}
+
+input subcategorieInput {
+  name: String!
+  description: String!
+  cod_category: Int!
+}
+
+type Query {
+  getAllSubcategories: [Subcategory]!
+  getSubcategory(cod_subcategory: Int!): Subcategory!
+}
+
+type Mutation {
+  createSubcategorie(data: subcategorieInput!): Subcategory!
+}

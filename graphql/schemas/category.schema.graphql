@@ -1,0 +1,21 @@
+type Category {
+  cod_category: Int!
+  name: String!
+  active: Boolean!
+
+  subcategories: [Subcategory!]!
+}
+
+input categorieInput {
+  name: String!
+  active: Boolean = true
+}
+
+type Query {
+  getAllCategories: [Category!]!
+  getCategory(cod_category: Int!): Category
+}
+
+type Mutation {
+  createCategorie(data: categorieInput!): Category!
+}

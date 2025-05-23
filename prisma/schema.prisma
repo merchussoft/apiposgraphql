@@ -1,0 +1,208 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model sucursals {
+    cod_sucursal Int     @id @default(autoincrement()) // Primary Key autoincremental
+    name         String  @unique @db.VarChar(100) // Campo único con longitud 100
+    address      String? @db.Text // Dirección opcional, tipo TEXT
+    phone        String? @db.VarChar(20) // Teléfono opcional, máx. 20 caracteres
+    active       Boolean @default(true) // Activo por defecto
+
+    box                 boxs[] // Relación 1:N (una sucursal tiene muchas cajas)
+    //    user                users[] // 1:N con usuarios
+    inventories         inventories[]
+    inventory_movements inventory_movements[]
+
+    @@index([name]) // Índice para mejorar búsquedas (ya implícito por @unique, pero bien si lo haces explícito)
+}
+
+model boxs {
+    cod_box      Int       @id @default(autoincrement()) // Primary Key autoincremental
+    name         String    @unique @db.VarChar(50)
+    cod_sucursal Int
+    active       Boolean   @default(true) // Activo por defecto
+    sucursal     sucursals @relation(fields: [cod_sucursal], references: [cod_sucursal])
+
+    sales sales[]
+
+    @@index([name]) // Índice para mejorar búsquedas (ya implícito por @unique, pero bien si lo haces explícito)
+}
+
+model rols {
+    cod_rol Int     @id @default(autoincrement()) // Primary Key autoincremental
+    name    String  @unique @db.VarChar(50)
+    active  Boolean @default(true) // Activo por defecto
+    user    users[] // 1:N con usuarios
+
+    @@index([name]) // Índice para mejorar búsquedas (ya implícito por @unique, pero bien si lo haces explícito)
+}
+
+model users {
+    cod_user Int      @id @default(autoincrement()) // Primary Key autoincremental
+    users    String   @unique @db.VarChar(30)
+    name     String   @db.VarChar(100)
+    email    String   @unique @db.VarChar(150)
+    phone    String?  @db.VarChar(20) // Teléfono opcional, máx. 20 caracteres
+    password String   @db.Text
+    createAt DateTime @default(now())
+    cod_rol  Int
+    //cod_sucursal Int
+
+    sales sales[]
+
+    rol                 rols                  @relation(fields: [cod_rol], references: [cod_rol])
+    //sucursal            sucursals             @relation(fields: [cod_sucursal], references: [cod_sucursal])
+    inventory_movements inventory_movements[]
+    //sucursals             sucursals?            @relation(fields: [sucursalsCod_sucursal], references: [cod_sucursal])
+    //sucursalsCod_sucursal Int?
+    //sucursals             sucursals?            @relation(fields: [sucursalsCod_sucursal], references: [cod_sucursal])
+    //sucursalsCod_sucursal Int?
+
+    @@index([email])
+}
+
+model clients {
+    cod_client Int     @id @default(autoincrement())
+    name       String  @unique @db.VarChar(100)
+    email      String  @unique @db.VarChar(150)
+    phone      String? @db.VarChar(20)
+    address    String? @db.Text // Dirección opcional, tipo TEXT
+
+    sales sales[]
+
+    @@index([name])
+}
+
+model payment_types {
+    cod_payment_type Int     @id @default(autoincrement())
+    name             String  @unique @db.VarChar(50)
+    active           Boolean @default(true) // Activo por defecto
+
+    sales sales[]
+
+    @@index([name])
+}
+
+model subcategorys {
+    cod_subcategory Int      @id @default(autoincrement())
+    name            String   @unique @db.VarChar(100)
+    description     String?
+    cod_category    Int
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @default(now()) @updatedAt
+
+    category categorys @relation(fields: [cod_category], references: [cod_category])
+
+    @@unique([name, cod_category]) // Previene subcategorías duplicadas dentro de la misma categoría
+}
+
+model categorys {
+    cod_category Int     @id @default(autoincrement())
+    name         String
+    description  String?
+    active       Boolean @default(true)
+
+    products      products[]
+    subcategories subcategorys[]
+
+    @@index([name])
+}
+
+model product_images {
+    cod_product_image Int      @id @default(autoincrement())
+    url               String // Ruta o URL pública de la imagen
+    alt               String? // Texto alternativo
+    cod_product       Int
+    createdAt         DateTime @default(now())
+
+    product products @relation(fields: [cod_product], references: [cod_product])
+}
+
+model products {
+    cod_product  Int     @id @default(autoincrement())
+    name         String  @db.VarChar(150)
+    ean          String  @unique @db.VarChar(50)
+    bar_code     String  @unique @db.VarChar(50)
+    unit_price   Decimal @db.Decimal(10, 2)
+    sku          String? @unique @db.VarChar(50)
+    description  String? @db.Text
+    cod_category Int
+    active       Boolean @default(true)
+
+    category categorys @relation(fields: [cod_category], references: [cod_category])
+
+    inventories         inventories[]
+    sales_details       sales_details[]
+    inventory_movements inventory_movements[]
+    images              product_images[]
+
+    @@index([ean])
+}
+
+model inventories {
+    cod_inventory Int      @id @default(autoincrement())
+    cod_product   Int
+    cod_sucursal  Int
+    current_stock Int      @default(0)
+    minimum_stock Int      @default(5)
+    updatedAt     DateTime @default(now())
+
+    products  products  @relation(fields: [cod_product], references: [cod_product], onDelete: Cascade)
+    sucursals sucursals @relation(fields: [cod_sucursal], references: [cod_sucursal])
+}
+
+model sales {
+    cod_sale         Int      @id @default(autoincrement())
+    cod_user         Int
+    cod_client       Int
+    cod_box          Int
+    sale_date        DateTime @default(now())
+    total            Decimal  @db.Decimal(10, 2)
+    cod_payment_type Int
+
+    users         users         @relation(fields: [cod_user], references: [cod_user])
+    clients       clients       @relation(fields: [cod_client], references: [cod_client])
+    boxs          boxs          @relation(fields: [cod_box], references: [cod_box])
+    payment_types payment_types @relation(fields: [cod_payment_type], references: [cod_payment_type])
+
+    sales_details sales_details[]
+}
+
+model sales_details {
+    cod_sales_detail Int     @id @default(autoincrement())
+    cod_sale         Int
+    cod_product      Int
+    amount           Int
+    unit_price       Decimal @db.Decimal(10, 2)
+    subtotal         Decimal @db.Decimal(10, 2)
+
+    products products @relation(fields: [cod_product], references: [cod_product])
+    sales    sales    @relation(fields: [cod_sale], references: [cod_sale])
+}
+
+enum movement_type {
+    entrada
+    salida
+    ajuste
+}
+
+model inventory_movements {
+    cod_inventory_movement Int           @id @default(autoincrement())
+    cod_product            Int
+    cod_sucursal           Int
+    movement_type          movement_type
+    amount                 Int
+    reason                 String        @db.Text
+    createdAt              DateTime      @default(now())
+    cod_user               Int
+
+    products  products  @relation(fields: [cod_product], references: [cod_product])
+    sucursals sucursals @relation(fields: [cod_sucursal], references: [cod_sucursal])
+    users     users     @relation(fields: [cod_user], references: [cod_user])
+}
