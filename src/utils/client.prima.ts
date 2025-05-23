@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { LogsQueryModel } from '../schema-mongo';
 
 const prisma = new PrismaClient({
@@ -6,7 +6,7 @@ const prisma = new PrismaClient({
 });
 
 
-prisma.$on('query', async (e) => {
+prisma.$on('query', async (e: Prima.QueryEvent) => {
     await LogsQueryModel.create({
         query: e.query,
         params: e.params,
