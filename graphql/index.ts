@@ -2,6 +2,7 @@ import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from '@apollo/server/express4';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import { print } from 'graphql';
 
 import express from "express";
 import http from 'http';
@@ -18,7 +19,9 @@ export const createApolloServer = async (app: express.Express) => {
 
     const httpServer = http.createServer(app);
 
-    const schema = makeExecutableSchema({ typeDefs, resolvers})
+    console.log(print(typeDefs));
+
+    const schema = makeExecutableSchema({ typeDefs, resolvers })
 
     const server = new ApolloServer({
         schema,
