@@ -19,8 +19,6 @@ export const createApolloServer = async (app: express.Express) => {
 
     const httpServer = http.createServer(app);
 
-    console.log(print(typeDefs));
-
     const schema = makeExecutableSchema({ typeDefs, resolvers })
 
     const server = new ApolloServer({
